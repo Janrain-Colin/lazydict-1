@@ -23,3 +23,12 @@ class TestLazyDictionary(TestCase):
         d['a'] = 1
         d['b'] = 2
         self.assertEqual(d['sum'], 3)
+
+    def test_atomic_evaluation(self):
+        d = lazydict.LazyDictionary()
+        d['division'] = lambda: 1/0
+        self.assertEqual(d.states['division'], 'defined')
+        self.assertRaises(ZeroDivisionError, d.__getitem__, 'division')
+        # second call checks lazydict.CircularReferenceError is not raised.
+        self.assertRaises(ZeroDivisionError, d.__getitem__, 'division')
+        self.assertEqual(d.states['division'], 'defined')
